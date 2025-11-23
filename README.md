@@ -27,6 +27,7 @@ Este proyecto es un prototipo educativo que demuestra los conceptos fundamentale
 - ✅ **Búsqueda de bloques** por contenido
 - ✅ **Estadísticas en tiempo real**
 - ✅ **Interfaz gráfica atractiva** con tema personalizado
+- ✅ **Vista educativa de agregar bloques** con visualización paso a paso
 
 ### Arquitectura
 
@@ -49,6 +50,7 @@ blockchain_app/
 │   │   └── validators.py   # Validadores (Chain of Responsibility)
 │   └── components/         # Componentes UI reutilizables
 │       ├── bloque_card.py
+│       ├── agregar_bloque_educativo.py  # Vista educativa de agregar bloques
 │       └── navigation.py
 └── README.md
 ```
@@ -113,6 +115,26 @@ python main.py
 2. Ingresa el índice del bloque a modificar
 3. Los datos se modificarán sin recalcular el hash
 4. La validación detectará la manipulación
+
+### Agregar Bloque (Educativo)
+
+**Nueva funcionalidad educativa** que combina agregar bloques con visualización paso a paso:
+
+1. Navega a "Agregar (Edu)" en el menú lateral
+2. Completa el formulario con los datos de la transacción:
+   - **Emisor**: Nombre del emisor
+   - **Receptor**: Nombre del receptor
+   - **Cantidad**: Monto (número)
+   - **Descripción**: Información adicional (opcional)
+3. Observa cómo se actualiza en tiempo real:
+   - 📝 **Paso 1**: Datos de la transacción en formato JSON
+   - ⚙️ **Paso 2**: Metadatos del bloque (índice, timestamp)
+   - 🔗 **Paso 3**: Hash del bloque anterior (conexión con la cadena)
+   - 🔐 **Paso 4**: Cálculo del hash SHA-256 del nuevo bloque
+4. Haz clic en "Agregar Bloque a la Cadena"
+5. Observa el mensaje de confirmación con detalles del bloque agregado
+
+**Beneficio educativo**: Esta vista permite comprender visualmente cómo se construye un bloque desde cero, cómo se conecta con el bloque anterior mediante el hash, y cómo se calcula el hash final del bloque.
 
 ## 🎨 Patrones de Diseño
 
@@ -208,6 +230,18 @@ La aplicación muestra:
 1. Agrega bloques con diferentes emisores/receptores
 2. En "Visualizar", busca por nombre de emisor
 3. Observa cómo se filtran los bloques
+
+### Aprender a Agregar Bloques
+
+1. Navega a "Agregar (Edu)" en el menú lateral
+2. Completa el formulario paso a paso
+3. Observa en tiempo real:
+   - Cómo se estructuran los datos de la transacción
+   - Qué metadatos se agregan al bloque
+   - Cómo se obtiene el hash del bloque anterior
+   - Cómo se calcula el hash SHA-256 del nuevo bloque
+4. Agrega el bloque y verifica en "Inicio" que fue agregado correctamente
+5. Experimenta modificando ligeramente los datos y observa cómo cambia el hash completamente
 
 ## 🛠️ Tecnologías Utilizadas
 

@@ -8,6 +8,7 @@ from src.controllers.blockchain_controller import BlockchainController
 from src.components.bloque_card import crear_bloque_card
 from src.models.bloque import Bloque
 from src.views.vista_educativa import crear_vista_educativa
+from src.components.agregar_bloque_educativo import crear_agregar_bloque_educativo
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -108,35 +109,154 @@ def main(page: ft.Page):
         page.update()
     
     def simular_ataque_dlg(e):
-        campo_indice = ft.TextField(label="Índice del bloque", keyboard_type=ft.KeyboardType.NUMBER)
+        stats = controller.obtener_estadisticas()
+        total_bloques = stats.get("total_bloques", 0)
+        
+        # Campo de índice con información
+        campo_indice = ft.TextField(
+            label="Índice del bloque a modificar",
+            hint_text=f"0 a {total_bloques - 1}",
+            keyboard_type=ft.KeyboardType.NUMBER,
+            helper_text=f"Bloques disponibles: {total_bloques}"
+        )
+        
+        mensaje_error = ft.Container(visible=False, padding=10, border_radius=5)
         
         def simular(e):
+            mensaje_error.visible = False
+            
+            # Validar que hay bloques
+            if total_bloques <= 1:
+                mensaje_error.content = ft.Row([
+                    ft.Icon(ft.Icons.ERROR, color="#ef5350", size=20),
+                    ft.Text("Necesitas al menos 2 bloques para simular un ataque", color="#ef5350", size=12)
+                ], spacing=10)
+                mensaje_error.bgcolor = "#b71c1c"
+                mensaje_error.visible = True
+                page.update()
+                return
+            
+            # Validar entrada
+            if not campo_indice.value:
+                campo_indice.error_text = "Ingresa un índice"
+                page.update()
+                return
+            
             try:
                 indice = int(campo_indice.value)
+                
+                # Validar rango
+                if indice < 0 or indice >= total_bloques:
+                    campo_indice.error_text = f"Índice debe estar entre 0 y {total_bloques - 1}"
+                    page.update()
+                    return
+                
+                # Obtener datos del bloque antes del ataque
+                cadena_antes = controller.obtener_cadena_completa()
+                bloque_antes = cadena_antes[indice] if indice < len(cadena_antes) else None
+                
+                # Simular ataque
                 exito, mensaje = controller.simular_ataque(indice)
                 dlg_ataque.open = False
                 page.update()
+                
+                # Obtener datos después del ataque
+                cadena_despues = controller.obtener_cadena_completa()
+                bloque_despues = cadena_despues[indice] if indice < len(cadena_despues) else None
+                
+                # Crear diálogo de resultado mejorado
+                contenido_resultado = ft.Column([
+                    ft.Row([
+                        ft.Icon(ft.Icons.WARNING, color="#ffa726", size=32),
+                        ft.Text(mensaje, size=14, weight=ft.FontWeight.BOLD, color="#ffa726")
+                    ], spacing=10),
+                    
+                    ft.Divider(),
+                    
+                    ft.Text("📊 Comparación:", size=14, weight=ft.FontWeight.BOLD, color="#26c6da"),
+                    
+                    # Antes
+                    ft.Container(
+                        content=ft.Column([
+                            ft.Text("ANTES del ataque:", size=12, weight=ft.FontWeight.BOLD, color="#66bb6a"),
+                            ft.Text(f"Datos: {bloque_antes.get('datos', {})}", size=11),
+                            ft.Text(f"Hash: {bloque_antes.get('hash_actual', '')[:32]}...", size=10, color="#4dd0e1"),
+                        ], spacing=4),
+                        padding=10,
+                        bgcolor="#1b5e20",
+                        border_radius=8,
+                        border=ft.border.all(1, "#66bb6a")
+                    ),
+                    
+                    ft.Icon(ft.Icons.ARROW_DOWNWARD, color="#ffa726", size=24),
+                    
+                    # Después
+                    ft.Container(
+                        content=ft.Column([
+                            ft.Text("DESPUÉS del ataque:", size=12, weight=ft.FontWeight.BOLD, color="#ef5350"),
+                            ft.Text(f"Datos: {bloque_despues.get('datos', {})}", size=11),
+                            ft.Text(f"Hash: {bloque_despues.get('hash_actual', '')[:32]}...", size=10, color="#ef5350"),
+                        ], spacing=4),
+                        padding=10,
+                        bgcolor="#b71c1c",
+                        border_radius=8,
+                        border=ft.border.all(1, "#ef5350")
+                    ),
+                    
+                    ft.Divider(),
+                    
+                    ft.Container(
+                        content=ft.Column([
+                            ft.Text("💡 ¿Qué pasó?", size=12, weight=ft.FontWeight.BOLD, color="#26c6da"),
+                            ft.Text("• Los datos del bloque fueron modificados", size=11),
+                            ft.Text("• El hash NO fue recalculado (simulando un ataque)", size=11),
+                            ft.Text("• La cadena ahora es INVÁLIDA", size=11),
+                            ft.Text("• Usa 'Validar Cadena' para verificar la corrupción", size=11),
+                        ], spacing=4),
+                        padding=10,
+                        bgcolor="#263238",
+                        border_radius=8,
+                        border=ft.border.all(1, "#26c6da")
+                    ),
+                ], spacing=12, scroll=ft.ScrollMode.AUTO)
+                
                 dlg_resultado = ft.AlertDialog(
-                    title=ft.Text("Ataque Simulado"),
-                    content=ft.Text(mensaje),
-                    actions=[ft.TextButton("Cerrar", on_click=lambda _: cerrar_dlg(dlg_resultado))],
+                    title=ft.Text("⚠️ Ataque Simulado"),
+                    content=contenido_resultado,
+                    actions=[
+                        ft.TextButton("Ver en Inicio", on_click=lambda _: (cerrar_dlg(dlg_resultado), cambiar_a_inicio())),
+                        ft.TextButton("Cerrar", on_click=lambda _: cerrar_dlg(dlg_resultado)),
+                    ],
                 )
                 page.dialog = dlg_resultado
                 dlg_resultado.open = True
                 page.update()
+                
             except ValueError:
-                campo_indice.error_text = "Número inválido"
+                campo_indice.error_text = "Debe ser un número entero"
                 page.update()
         
+        def cambiar_a_inicio():
+            """Cambia a la vista de inicio para ver el resultado."""
+            navegacion.selected_index = 0
+            contenedor_vista.content = vista_home
+            actualizar_vista()
+        
         dlg_ataque = ft.AlertDialog(
-            title=ft.Text("Simular Ataque"),
+            title=ft.Text("⚠️ Simular Ataque a la Blockchain"),
             content=ft.Column([
-                ft.Text("Modificará un bloque para demostrar inmutabilidad"),
+                ft.Text(
+                    "Esta acción modificará los datos de un bloque sin recalcular su hash, "
+                    "demostrando cómo se detecta la manipulación.",
+                    size=12
+                ),
+                ft.Divider(),
                 campo_indice,
-            ], tight=True),
+                mensaje_error,
+            ], tight=True, spacing=10),
             actions=[
                 ft.TextButton("Cancelar", on_click=lambda _: cerrar_dlg(dlg_ataque)),
-                ft.TextButton("Simular", on_click=simular),
+                ft.ElevatedButton("💣 Simular Ataque", on_click=simular, bgcolor="#e65100", color="#ffffff"),
             ],
         )
         page.dialog = dlg_ataque
@@ -197,6 +317,7 @@ def main(page: ft.Page):
     ], spacing=20, expand=True)
     
     vista_educativa_container = crear_vista_educativa(page)
+    vista_agregar_educativo_container = crear_agregar_bloque_educativo(page, controller)
     
     contenedor_vista = ft.Container(content=vista_home, expand=True, padding=20)
     
@@ -208,6 +329,8 @@ def main(page: ft.Page):
         elif indice == 1:
             contenedor_vista.content = vista_agregar
         elif indice == 2:
+            contenedor_vista.content = vista_agregar_educativo_container
+        elif indice == 3:
             contenedor_vista.content = vista_educativa_container
         page.update()
     
@@ -218,6 +341,7 @@ def main(page: ft.Page):
         destinations=[
             ft.NavigationRailDestination(icon=ft.Icons.HOME_OUTLINED, selected_icon=ft.Icons.HOME, label="Inicio"),
             ft.NavigationRailDestination(icon=ft.Icons.ADD_BOX_OUTLINED, selected_icon=ft.Icons.ADD_BOX, label="Agregar"),
+            ft.NavigationRailDestination(icon=ft.Icons.SCIENCE_OUTLINED, selected_icon=ft.Icons.SCIENCE, label="Agregar (Edu)"),
             ft.NavigationRailDestination(icon=ft.Icons.SCHOOL_OUTLINED, selected_icon=ft.Icons.SCHOOL, label="Educación"),
         ],
         on_change=cambiar_vista,
