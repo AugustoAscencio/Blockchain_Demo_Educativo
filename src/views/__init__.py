@@ -2,13 +2,9 @@
 Paquete de vistas de la aplicación.
 
 Contiene las diferentes vistas de la interfaz:
-- HomeView: Vista principal
-- AgregarBloqueView: Formulario para agregar bloques
-- VisualizarCadenaView: Visualización completa de la blockchain
+- vista_educativa: Vista educativa con conceptos blockchain
 """
 
-from .home_view import HomeView
-from .agregar_bloque_view import AgregarBloqueView
-from .visualizar_cadena_view import VisualizarCadenaView
+from .vista_educativa import crear_vista_educativa
 
-__all__ = ["HomeView", "AgregarBloqueView", "VisualizarCadenaView"]
+__all__ = ["crear_vista_educativa"]

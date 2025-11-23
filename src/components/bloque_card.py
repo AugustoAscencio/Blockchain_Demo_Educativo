@@ -90,17 +90,48 @@ def crear_bloque_card(datos_bloque: Dict[str, Any], es_valido: bool = True, page
                 icono_validez,
                 boton_expandir,
             ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-            ft.Row([
-                ft.Column([
-                    ft.Text("Hash:", size=10, color="#ffffff99"),
-                    ft.Text(formatear_hash(hash_actual, 16), size=11, color="#4dd0e1"),
-                ], spacing=2),
-                ft.Icon(ft.Icons.ARROW_BACK, size=16),
-                ft.Column([
-                    ft.Text("Previo:", size=10, color="#ffffff99"),
-                    ft.Text(formatear_hash(hash_previo, 16), size=11, color="#ffb74d"),
-                ], spacing=2),
-            ], alignment=ft.MainAxisAlignment.START, spacing=10),
+            
+            # Mejora visual de la conexión hash previo → hash actual
+            ft.Container(
+                content=ft.Column([
+                    ft.Row([
+                        ft.Container(
+                            content=ft.Column([
+                                ft.Row([
+                                    ft.Icon(ft.Icons.INPUT, size=14, color="#ffb74d"),
+                                    ft.Text("Hash Previo:", size=10, color="#ffffff99"),
+                                ], spacing=5),
+                                ft.Text(formatear_hash(hash_previo, 16), size=11, color="#ffb74d", weight=ft.FontWeight.BOLD),
+                            ], spacing=2),
+                            expand=True
+                        ),
+                        
+                        # Indicador visual de enlace
+                        ft.Container(
+                            content=ft.Column([
+                                ft.Icon(ft.Icons.LINK, size=20, color="#66bb6a"),
+                                ft.Text("enlace", size=8, color="#66bb6a"),
+                            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=0),
+                            padding=5,
+                            tooltip="Este bloque está enlazado al anterior mediante el hash previo"
+                        ),
+                        
+                        ft.Container(
+                            content=ft.Column([
+                                ft.Row([
+                                    ft.Icon(ft.Icons.TAG, size=14, color="#4dd0e1"),
+                                    ft.Text("Hash Actual:", size=10, color="#ffffff99"),
+                                ], spacing=5),
+                                ft.Text(formatear_hash(hash_actual, 16), size=11, color="#4dd0e1", weight=ft.FontWeight.BOLD),
+                            ], spacing=2),
+                            expand=True
+                        ),
+                    ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, spacing=10),
+                ], spacing=5),
+                padding=8,
+                bgcolor="#00000021",
+                border_radius=8,
+            ),
             detalles_container,
         ], spacing=10),
         padding=15,

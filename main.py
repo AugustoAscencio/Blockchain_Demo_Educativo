@@ -7,6 +7,7 @@ import logging
 from src.controllers.blockchain_controller import BlockchainController
 from src.components.bloque_card import crear_bloque_card
 from src.models.bloque import Bloque
+from src.views.vista_educativa import crear_vista_educativa
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -195,6 +196,8 @@ def main(page: ft.Page):
         ),
     ], spacing=20, expand=True)
     
+    vista_educativa_container = crear_vista_educativa(page)
+    
     contenedor_vista = ft.Container(content=vista_home, expand=True, padding=20)
     
     def cambiar_vista(e):
@@ -204,6 +207,8 @@ def main(page: ft.Page):
             actualizar_vista()
         elif indice == 1:
             contenedor_vista.content = vista_agregar
+        elif indice == 2:
+            contenedor_vista.content = vista_educativa_container
         page.update()
     
     navegacion = ft.NavigationRail(
@@ -213,6 +218,7 @@ def main(page: ft.Page):
         destinations=[
             ft.NavigationRailDestination(icon=ft.Icons.HOME_OUTLINED, selected_icon=ft.Icons.HOME, label="Inicio"),
             ft.NavigationRailDestination(icon=ft.Icons.ADD_BOX_OUTLINED, selected_icon=ft.Icons.ADD_BOX, label="Agregar"),
+            ft.NavigationRailDestination(icon=ft.Icons.SCHOOL_OUTLINED, selected_icon=ft.Icons.SCHOOL, label="Educación"),
         ],
         on_change=cambiar_vista,
         bgcolor="#263238",
